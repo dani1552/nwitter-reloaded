@@ -10,11 +10,16 @@ import { useEffect, useState } from "react";
 import LoadingScreen from "./components/loading-screen";
 import { auth } from "./firebase";
 import ProtectedRoute from "./components/protected_route";
+import ChangePassword from "./components/change-password";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (<ProtectedRoute><Layout /></ProtectedRoute>),
+    element: (
+      <ProtectedRoute>
+        <Layout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         path: "",
@@ -34,6 +39,10 @@ const router = createBrowserRouter([
     path: "/create-account",
     element: <CreateAccount />,
   },
+  {
+    path: "/change-password",
+    element: <ChangePassword/>,
+  },
 ]);
 
 const GlobalStyles = createGlobalStyle`
@@ -50,7 +59,7 @@ const GlobalStyles = createGlobalStyle`
 function App() {
   const [isLoading, setLoading] = useState(true);
   const init = async () => {
-    //wait for firebase if the user is logged in: read cookies and tokens 
+    //wait for firebase if the user is logged in: read cookies and tokens
     console.log(auth);
     await auth.authStateReady();
     setLoading(false);

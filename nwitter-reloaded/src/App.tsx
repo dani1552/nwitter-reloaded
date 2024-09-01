@@ -9,11 +9,12 @@ import { createGlobalStyle } from "styled-components";
 import { useEffect, useState } from "react";
 import LoadingScreen from "./components/loading-screen";
 import { auth } from "./firebase";
+import ProtectedRoute from "./components/protected_route";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Layout />,
+    element: (<ProtectedRoute><Layout /></ProtectedRoute>),
     children: [
       {
         path: "",

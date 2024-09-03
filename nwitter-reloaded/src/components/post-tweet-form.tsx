@@ -1,7 +1,8 @@
+import { addDoc, collection, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import styled from "styled-components";
-import { addDoc, collection } from "firebase/firestore"; 
-import { auth, db } from "../firebase";
+import { styled } from "styled-components";
+import { auth, db, storage } from "../firebase";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 const Form = styled.form`
   display: flex;
@@ -18,9 +19,8 @@ const TextArea = styled.textarea`
   background-color: black;
   width: 100%;
   resize: none;
-  font-family: "system-ui", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   &::placeholder {
     font-size: 16px;
   }
@@ -76,31 +76,42 @@ export default function PostTweetForm() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const user = auth.currentUser;
-
     if (!user || isLoading || tweet === "" || tweet.length > 180) return;
-    
     try {
-        setLoading(true);
-        await addDoc(collection(db, "tweets"), {
-            tweet,
-            createAt: Date.now(),
-            username: user.displayName || "Anonymous",
-            userId: user.uid,
+      setLoading(true);
+
+      // 새로운 문서를 firebase 컬렉션에 저장
+      const doc = await addDoc(collection(db, "tweets"), {
+        tweet,
+        createdAt: Date.now(),
+        username: user.displayName || "Anonymous",
+        userId: user.uid,
+      });
+      if (file) {
+        const locationRef = ref(storage, `tweets/${user.uid}/${doc.id}`);
+        const result = await uploadBytes(locationRef, file);
+        const url = await getDownloadURL(result.ref);
+        await updateDoc(doc, {
+          photo: url,
         });
+      }
+      setTweet("");
+      setFile(null);
     } catch (e) {
-        console.log(e);
+      console.log(e);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
   return (
     <Form onSubmit={onSubmit}>
       <TextArea
+        required
         rows={5}
         maxLength={180}
         onChange={onChange}
         value={tweet}
-        placeholder="What is happening?"
+        placeholder="What is happening?!"
       />
       <AttachFileButton htmlFor="file">
         {file ? "Photo added ✅" : "Add photo"}
@@ -113,7 +124,7 @@ export default function PostTweetForm() {
       />
       <SubmitBtn
         type="submit"
-        value={isLoading ? "Posting..." : "Post tweet"}
+        value={isLoading ? "Posting..." : "Post Tweet"}
       />
     </Form>
   );

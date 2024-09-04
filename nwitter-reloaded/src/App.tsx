@@ -41,7 +41,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/change-password",
-    element: <ChangePassword/>,
+    element: <ChangePassword />,
   },
 ]);
 
@@ -49,6 +49,11 @@ const GlobalStyles = createGlobalStyle`
   * {
     box-sizing: border-box;
   }
+
+  ::-webkit-scrollbar {
+    display:none;
+  }
+
   body {
     background-color: black;
     color: white;
